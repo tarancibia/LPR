@@ -1,0 +1,45 @@
+{
+  "track_id": 6,
+  "class_name": "motorcycle",
+  "first_seen": "2026-04-28T13:54:19",
+  "last_seen": "2026-04-28T13:54:19",
+  "total_frames": 3,
+  "frames": [
+    {
+      "file": "frame_001611.jpg",
+      "frame_number": 1611,
+      "timestamp": "2026-04-28T13:54:19",
+      "confidence": 0.7455,
+      "bbox": {
+        "x1": 1593,
+        "y1": 476,
+        "x2": 1896,
+        "y2": 924
+      }
+    },
+    {
+      "file": "frame_001614.jpg",
+      "frame_number": 1614,
+      "timestamp": "2026-04-28T13:54:19",
+      "confidence": 0.8126,
+      "bbox": {
+        "x1": 1651,
+        "y1": 450,
+        "x2": 1920,
+        "y2": 871
+      }
+    },
+    {
+      "file": "frame_001617.jpg",
+      "frame_number": 1617,
+      "timestamp": "2026-04-28T13:54:19",
+      "confidence": 0.7798,
+      "bbox": {
+        "x1": 1711,
+        "y1": 413,
+        "x2": 1920,
+        "y2": 807
+      }
+    }
+  ]
+}

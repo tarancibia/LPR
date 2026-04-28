@@ -1,0 +1,58 @@
+{
+  "track_0001": {
+    "track_id": 1,
+    "class_name": "car",
+    "first_seen": "2026-04-28T13:53:15",
+    "last_seen": "2026-04-28T13:53:16",
+    "total_frames": 9,
+    "folder": "vehicles\\track_0001"
+  },
+  "track_0002": {
+    "track_id": 2,
+    "class_name": "car",
+    "first_seen": "2026-04-28T13:53:15",
+    "last_seen": "2026-04-28T13:53:16",
+    "total_frames": 6,
+    "folder": "vehicles\\track_0002"
+  },
+  "track_0003": {
+    "track_id": 3,
+    "class_name": "car",
+    "first_seen": "2026-04-28T13:53:16",
+    "last_seen": "2026-04-28T13:53:17",
+    "total_frames": 10,
+    "folder": "vehicles\\track_0003"
+  },
+  "track_0004": {
+    "track_id": 4,
+    "class_name": "car",
+    "first_seen": "2026-04-28T13:53:28",
+    "last_seen": "2026-04-28T13:53:30",
+    "total_frames": 15,
+    "folder": "vehicles\\track_0004"
+  },
+  "track_0005": {
+    "track_id": 5,
+    "class_name": "car",
+    "first_seen": "2026-04-28T13:53:32",
+    "last_seen": "2026-04-28T13:53:32",
+    "total_frames": 7,
+    "folder": "vehicles\\track_0005"
+  },
+  "track_0006": {
+    "track_id": 6,
+    "class_name": "motorcycle",
+    "first_seen": "2026-04-28T13:54:19",
+    "last_seen": "2026-04-28T13:54:19",
+    "total_frames": 3,
+    "folder": "vehicles\\track_0006"
+  },
+  "track_0007": {
+    "track_id": 7,
+    "class_name": "car",
+    "first_seen": "2026-04-28T13:54:22",
+    "last_seen": "2026-04-28T13:54:24",
+    "total_frames": 20,
+    "folder": "vehicles\\track_0007"
+  }
+}

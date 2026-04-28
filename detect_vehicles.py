@@ -1,19 +1,27 @@
 """
-LPR - Etapa 1: Detección de Vehículos
-=======================================
-Detecta vehículos en el stream RTSP y guarda:
-  - Coordenadas del bounding box (JSON)
-  - Crop del vehículo en resolución original (JPG)
+LPR - Etapa 1: Detección y Tracking de Vehículos
+==================================================
+Detecta vehículos en el stream RTSP, les asigna un ID
+persistente (ByteTrack) y agrupa todos sus frames en una
+carpeta por vehículo, listos para la Etapa 2.
 
-Las coordenadas y crops quedan listos para la Etapa 2 (detección de patente).
+Estructura de salida:
+  output_stage1/
+  ├── vehicles/
+  │   ├── track_0001/
+  │   │   ├── frame_0042.jpg
+  │   │   ├── frame_0045.jpg
+  │   │   └── metadata.json
+  │   └── track_0002/
+  │       └── ...
+  └── index.json
 
-ROI: Si existe config/roi.json, solo se procesan vehículos dentro de esa zona.
-     Usar tools/define_roi.py para definir/editar el polígono.
+ROI: Si existe config/roi.json, solo se procesan vehículos
+     dentro de esa zona. Usar tools/define_roi.py para editar.
 """
 
 import cv2
 import json
-import os
 import time
 import numpy as np
 from pathlib import Path
@@ -23,19 +31,16 @@ from ultralytics import YOLO
 # CONFIGURACION
 # ===============================
 
-# Stream de la cámara Dahua
-RTSP_URL = "rtsp://admin:gda.adm123@192.168.107.121:554/cam/realmonitor?channel=1&subtype=0"
-
-# Modelo YOLO (detector genérico COCO)
+RTSP_URL   = "rtsp://admin:gda.adm123@192.168.107.121:554/cam/realmonitor?channel=1&subtype=0"
 MODEL_PATH = "yolov8n.pt"
 
-# Procesar 1 de cada N frames para ahorrar CPU
+# Procesar 1 de cada N frames
 PROCESS_EVERY = 3
 
-# Confianza mínima para aceptar una detección de vehículo (0.0 a 1.0)
+# Confianza mínima para aceptar una detección
 CONFIDENCE_THRESHOLD = 0.5
 
-# Clases de vehículos en el dataset COCO
+# Clases de vehículos en COCO
 VEHICLE_CLASSES = {
     2: "car",
     3: "motorcycle",
@@ -43,57 +48,123 @@ VEHICLE_CLASSES = {
     7: "truck",
 }
 
-# Carpeta raíz donde se guardan los resultados
-OUTPUT_DIR  = Path("output_stage1")
-ROI_CONFIG  = Path("config/roi.json")
-
-# Máximo de vehículos a guardar en disco (None = sin límite)
-MAX_SAVES = None
+# Directorios de salida
+OUTPUT_DIR = Path("output_stage1")
+ROI_CONFIG = Path("config/roi.json")
 
 # ===============================
 # PREPARAR DIRECTORIOS
 # ===============================
 
-crops_dir = OUTPUT_DIR / "crops"
-crops_dir.mkdir(parents=True, exist_ok=True)
+vehicles_dir = OUTPUT_DIR / "vehicles"
+vehicles_dir.mkdir(parents=True, exist_ok=True)
 
-coords_file = OUTPUT_DIR / "coordenadas.json"
+index_file = OUTPUT_DIR / "index.json"
 
-# Cargar coordenadas previas si ya existe el archivo
-if coords_file.exists():
-    with open(coords_file, "r") as f:
-        all_detections = json.load(f)
-    print(f"[INFO] {len(all_detections)} detecciones previas cargadas desde {coords_file}")
+# Cargar index existente
+track_id_offset = 0
+if index_file.exists():
+    with open(index_file) as f:
+        index = json.load(f)
+    print(f"[INFO] Index existente: {len(index)} vehículos previos")
+    for k in index.keys():
+        if k.startswith("track_"):
+            try:
+                val = int(k.split("_")[1])
+                if val > track_id_offset:
+                    track_id_offset = val
+            except:
+                pass
 else:
-    all_detections = []
+    index = {}
 
 # ===============================
 # CARGAR ROI (si existe)
 # ===============================
 
-roi_polygon = None  # None = sin filtro, detecta en todo el frame
+roi_polygon = None
 
 if ROI_CONFIG.exists():
     with open(ROI_CONFIG) as f:
         roi_data = json.load(f)
     roi_polygon = np.array(roi_data["roi"], dtype=np.int32)
-    print(f"[INFO] ROI cargado: {len(roi_data['roi'])} puntos — solo se procesarán vehículos dentro de la zona")
+    print(f"[INFO] ROI cargado: {len(roi_data['roi'])} puntos")
 else:
-    print("[WARN] No se encontró config/roi.json — se detecta en todo el frame")
-    print("       Ejecutar 'python tools/define_roi.py' para definir la zona de interés")
+    print("[WARN] Sin ROI definido — se detecta en todo el frame")
+    print("       Ejecutar: python tools/define_roi.py")
 
 
 def center_in_roi(x1, y1, x2, y2):
     """Retorna True si el centro del bbox está dentro del polígono ROI."""
     if roi_polygon is None:
-        return True  # Sin ROI: aceptar todo
+        return True
     cx = int((x1 + x2) / 2)
     cy = int((y1 + y2) / 2)
-    # pointPolygonTest: >0 adentro, 0 borde, <0 afuera
     return cv2.pointPolygonTest(roi_polygon, (cx, cy), False) >= 0
 
+
+def track_dir(track_id: int) -> Path:
+    """Retorna la carpeta del vehículo, creándola si no existe."""
+    d = vehicles_dir / f"track_{track_id:04d}"
+    d.mkdir(exist_ok=True)
+    return d
+
+
+def save_frame(track_id: int, frame_number: int, crop, bbox, conf, class_name, timestamp):
+    """Guarda el crop y actualiza metadata.json del vehículo."""
+    folder = track_dir(track_id)
+    track_key = f"track_{track_id:04d}"
+
+    # Nombre del archivo del crop
+    crop_filename = f"frame_{frame_number:06d}.jpg"
+    cv2.imwrite(str(folder / crop_filename), crop)
+
+    # Registro del frame
+    frame_record = {
+        "file":         crop_filename,
+        "frame_number": frame_number,
+        "timestamp":    timestamp,
+        "confidence":   round(conf, 4),
+        "bbox":         {"x1": bbox[0], "y1": bbox[1], "x2": bbox[2], "y2": bbox[3]},
+    }
+
+    # Actualizar o crear metadata del vehículo
+    meta_file = folder / "metadata.json"
+    if meta_file.exists():
+        with open(meta_file) as f:
+            meta = json.load(f)
+        meta["frames"].append(frame_record)
+        meta["last_seen"]    = timestamp
+        meta["total_frames"] = len(meta["frames"])
+    else:
+        meta = {
+            "track_id":    track_id,
+            "class_name":  class_name,
+            "first_seen":  timestamp,
+            "last_seen":   timestamp,
+            "total_frames": 1,
+            "frames":      [frame_record],
+        }
+
+    with open(meta_file, "w") as f:
+        json.dump(meta, f, indent=2)
+
+    # Actualizar index global
+    index[track_key] = {
+        "track_id":    track_id,
+        "class_name":  class_name,
+        "first_seen":  meta["first_seen"],
+        "last_seen":   timestamp,
+        "total_frames": meta["total_frames"],
+        "folder":      str(folder.relative_to(OUTPUT_DIR)),
+    }
+    with open(index_file, "w") as f:
+        json.dump(index, f, indent=2)
+
+    return crop_filename
+
 # ===============================
-# CARGA DEL MODELO
+# CARGAR MODELO
 # ===============================
 
 print("[INFO] Cargando modelo YOLO...")
@@ -101,7 +172,7 @@ model = YOLO(MODEL_PATH)
 print(f"[INFO] Modelo '{MODEL_PATH}' listo")
 
 # ===============================
-# CONEXION A LA CAMARA
+# CONECTAR CAMARA
 # ===============================
 
 print(f"[INFO] Conectando a: {RTSP_URL.split('@')[1].split('/')[0]}")
@@ -110,7 +181,6 @@ cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
 if not cap.isOpened():
     print("[ERROR] No se pudo conectar a la cámara RTSP")
-    print("        Verificar IP, usuario y contraseña")
     exit(1)
 
 print("[INFO] Cámara conectada")
@@ -119,15 +189,17 @@ print("[INFO] Cámara conectada")
 # VARIABLES DE ESTADO
 # ===============================
 
-frame_count = 0
-saves_count = len(all_detections)
-prev_time = time.time()
+frame_count   = 0
+total_saves   = 0
+prev_time     = time.time()
+track_mapping = {}
+next_track_id = track_id_offset + 1
 
 # ===============================
 # LOOP PRINCIPAL
 # ===============================
 
-print("\n[INFO] Iniciando detección de vehículos...")
+print("\n[INFO] Iniciando detección con tracking...")
 print("       Presionar 'Q' para salir\n")
 
 while True:
@@ -143,138 +215,118 @@ while True:
 
     frame_count += 1
 
-    # Saltear frames para reducir carga de CPU
     if frame_count % PROCESS_EVERY != 0:
         continue
 
-    # Timestamp del frame procesado
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-
-    # --------------------------------------------------
-    # INFERENCIA: detectar objetos en el frame completo
-    # --------------------------------------------------
-    results = model(frame, verbose=False)
-    boxes = results[0].boxes
-
-    # Frame de anotación (no modifica el original)
+    timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
     annotated = frame.copy()
-    vehicles_this_frame = []
 
-    for box in boxes:
+    # --------------------------------------------------
+    # INFERENCIA CON TRACKING (ByteTrack)
+    # --------------------------------------------------
+    results = model.track(
+        frame,
+        persist=True,           # mantiene IDs entre frames
+        tracker="bytetrack.yaml",
+        verbose=False,
+        conf=CONFIDENCE_THRESHOLD,
+        classes=list(VEHICLE_CLASSES.keys()),
+    )
+
+    boxes    = results[0].boxes
+    track_ids = boxes.id
+
+    # Sin detecciones con ID asignado en este frame
+    if track_ids is None:
+        # Mostrar frame sin anotaciones de tracking
+        if roi_polygon is not None:
+            cv2.polylines(annotated, [roi_polygon], True, (0, 255, 255), 2)
+        current_time = time.time()
+        fps = 1.0 / max(current_time - prev_time, 1e-6)
+        prev_time = current_time
+        cv2.putText(annotated, f"FPS: {fps:.1f}",        (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,0), 2)
+        cv2.putText(annotated, f"Frame: {frame_count}",   (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+        cv2.putText(annotated, f"Vehiculos (totales): {len(index)}", (20, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+        cv2.putText(annotated, f"Guardados: {total_saves}", (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+        cv2.imshow("LPR - Etapa 1: Tracking de Vehiculos", annotated)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+        continue
+
+    track_ids_list = track_ids.int().cpu().tolist()
+
+    for box, tid_raw in zip(boxes, track_ids_list):
         cls_id = int(box.cls[0])
-        conf = float(box.conf[0])
+        conf   = float(box.conf[0])
 
-        # Filtrar solo vehículos con suficiente confianza
-        if cls_id not in VEHICLE_CLASSES or conf < CONFIDENCE_THRESHOLD:
+        if cls_id not in VEHICLE_CLASSES:
             continue
 
-        # Coordenadas en píxeles del frame original (alta resolución)
         x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
         class_name = VEHICLE_CLASSES[cls_id]
 
-        # Filtrar por ROI: ignorar vehículos fuera de la zona de interés
+        # Filtrar por ROI
         if not center_in_roi(x1, y1, x2, y2):
             continue
 
-        vehicles_this_frame.append({
-            "class_id": cls_id,
-            "class_name": class_name,
-            "confidence": round(conf, 4),
-            "bbox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-        })
+        # Asignar ID secuencial solo a los que entran a la ROI
+        if tid_raw not in track_mapping:
+            track_mapping[tid_raw] = next_track_id
+            next_track_id += 1
+        tid = track_mapping[tid_raw]
 
-        # --------------------------------------------------
-        # DIBUJAR bounding box en pantalla
-        # --------------------------------------------------
+        # Crop en resolución original
+        crop = frame[y1:y2, x1:x2]
+
+        if crop.size > 0:
+            fname = save_frame(tid, frame_count, crop, (x1, y1, x2, y2), conf, class_name, timestamp)
+            total_saves += 1
+            print(
+                f"[SAVE] track={tid:04d} | frame={frame_count} | "
+                f"{class_name} ({conf:.0%}) | "
+                f"bbox=({x1},{y1})-({x2},{y2}) | {fname}"
+            )
+
+        # Dibujar bbox con ID
         cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 220, 0), 2)
-        label = f"{class_name} {conf:.0%}"
-        cv2.putText(
-            annotated, label, (x1, y1 - 8),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 220, 0), 2
-        )
-
-        # --------------------------------------------------
-        # GUARDAR coordenadas + crop si no se llegó al límite
-        # --------------------------------------------------
-        if MAX_SAVES is None or saves_count < MAX_SAVES:
-
-            # Crop del vehículo en resolución ORIGINAL (sin escalar)
-            crop = frame[y1:y2, x1:x2]
-
-            if crop.size > 0:
-                crop_filename = f"{timestamp}_f{frame_count}_{class_name}_{saves_count + 1:04d}.jpg"
-                crop_path = crops_dir / crop_filename
-                cv2.imwrite(str(crop_path), crop)
-
-                # Registro de la detección
-                detection_record = {
-                    "id": saves_count + 1,
-                    "timestamp": timestamp,
-                    "frame": frame_count,
-                    "crop_file": crop_filename,
-                    "class_id": cls_id,
-                    "class_name": class_name,
-                    "confidence": round(conf, 4),
-                    "bbox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-                    "frame_size": {
-                        "width": frame.shape[1],
-                        "height": frame.shape[0],
-                    },
-                }
-                all_detections.append(detection_record)
-                saves_count += 1
-
-                print(
-                    f"[SAVE] #{saves_count:04d} | frame={frame_count} | "
-                    f"{class_name} ({conf:.0%}) | "
-                    f"bbox=({x1},{y1})-({x2},{y2}) | "
-                    f"crop={crop_filename}"
-                )
-
-                # Guardar JSON actualizado en disco
-                with open(coords_file, "w") as f:
-                    json.dump(all_detections, f, indent=2)
+        label = f"ID:{tid} {class_name} {conf:.0%}"
+        cv2.putText(annotated, label, (x1, y1 - 8),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 220, 0), 2)
 
     # --------------------------------------------------
-    # INFO EN PANTALLA
+    # DIBUJAR ROI Y UI
     # --------------------------------------------------
+    if roi_polygon is not None:
+        cv2.polylines(annotated, [roi_polygon], True, (0, 255, 255), 2)
+
     current_time = time.time()
     fps = 1.0 / max(current_time - prev_time, 1e-6)
     prev_time = current_time
 
-    # Dibujar el polígono ROI sobre el frame
-    if roi_polygon is not None:
-        cv2.polylines(annotated, [roi_polygon], isClosed=True, color=(0, 255, 255), thickness=2)
+    cv2.putText(annotated, f"FPS: {fps:.1f}",              (20, 35),  cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+    cv2.putText(annotated, f"Frame: {frame_count}",         (20, 60),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+    cv2.putText(annotated, f"Vehiculos (totales): {len(index)}", (20, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+    cv2.putText(annotated, f"Frames guardados: {total_saves}", (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
-    cv2.putText(annotated, f"FPS: {fps:.1f}",          (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-    cv2.putText(annotated, f"Frame: {frame_count}",     (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
-    cv2.putText(annotated, f"Vehiculos: {len(vehicles_this_frame)}", (20, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 220, 0), 2)
-    cv2.putText(annotated, f"Guardados: {saves_count}",  (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     roi_status = "ROI: ACTIVO" if roi_polygon is not None else "ROI: sin definir"
     roi_color  = (0, 255, 255) if roi_polygon is not None else (0, 100, 255)
     cv2.putText(annotated, roi_status, (20, 135), cv2.FONT_HERSHEY_SIMPLEX, 0.5, roi_color, 1)
 
-    if MAX_SAVES and saves_count >= MAX_SAVES:
-        cv2.putText(
-            annotated, "LIMITE ALCANZADO — Solo mostrando",
-            (20, 140), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 100, 255), 1
-        )
-
-    cv2.imshow("LPR - Etapa 1: Deteccion de Vehiculos", annotated)
+    cv2.imshow("LPR - Etapa 1: Tracking de Vehiculos", annotated)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
         print("\n[INFO] Salida solicitada por el usuario")
         break
 
 # ===============================
-# LIMPIEZA Y RESUMEN
+# RESUMEN FINAL
 # ===============================
 
 print("\n" + "=" * 50)
-print(f"  Frames procesados : {frame_count // PROCESS_EVERY}")
-print(f"  Vehículos guardados: {saves_count}")
-print(f"  Coordenadas en    : {coords_file}")
-print(f"  Crops en          : {crops_dir}")
+print(f"  Frames procesados  : {frame_count // PROCESS_EVERY}")
+print(f"  Vehículos únicos   : {len(index)}")
+print(f"  Frames guardados   : {total_saves}")
+print(f"  Salida en          : {OUTPUT_DIR}")
 print("=" * 50)
 
 cap.release()
