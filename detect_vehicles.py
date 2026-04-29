@@ -32,13 +32,29 @@ from ultralytics import YOLO
 # ===============================
 
 RTSP_URL   = "rtsp://admin:gda.adm123@192.168.107.121:554/cam/realmonitor?channel=1&subtype=0"
+#RTSP_URL   = "rtsp://admin:hw7J4wrc*SN6@192.168.105.174:554/cam/realmonitor?channel=1&subtype=0"
 MODEL_PATH = "yolov8n.pt"
 
 # Procesar 1 de cada N frames
 PROCESS_EVERY = 3
 
 # Confianza mínima para aceptar una detección
-CONFIDENCE_THRESHOLD = 0.5
+CONFIDENCE_THRESHOLD = 0.8
+
+# Filtros de Calidad y Movimiento (Pipeline Etapa 1)
+MIN_BBOX_WIDTH = 60
+MIN_BBOX_HEIGHT = 60
+MIN_SHARPNESS = 100.0
+MIN_MOVEMENT_PIXELS = 10
+MAX_STATIONARY_FRAMES = 3
+
+# Expandir bbox SOLO para el recorte guardado (para incluir mejor el vehículo/patente)
+# Recomendación: más padding hacia abajo (donde suele estar la patente).
+# El cálculo de nitidez y filtros se hace con el bbox original.
+BBOX_PADDING_RATIO_X = 0.15
+BBOX_PADDING_RATIO_Y_TOP = 0.10
+BBOX_PADDING_RATIO_Y_BOTTOM = 0.25
+BBOX_PADDING_MIN_PIXELS = 8
 
 # Clases de vehículos en COCO
 VEHICLE_CLASSES = {
@@ -94,6 +110,12 @@ else:
     print("       Ejecutar: python tools/define_roi.py")
 
 
+def calculate_sharpness(image):
+    """Calcula la varianza del Laplaciano para determinar la nitidez de la imagen."""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
+
+
 def center_in_roi(x1, y1, x2, y2):
     """Retorna True si el centro del bbox está dentro del polígono ROI."""
     if roi_polygon is None:
@@ -110,7 +132,26 @@ def track_dir(track_id: int) -> Path:
     return d
 
 
-def save_frame(track_id: int, frame_number: int, crop, bbox, conf, class_name, timestamp):
+def expand_bbox_for_crop(x1: int, y1: int, x2: int, y2: int, frame_shape):
+    """Expande bbox con padding (asimétrico en Y) y lo limita a los bordes del frame.
+
+    Nota: pensado para el recorte guardado (mejor chance de incluir patente).
+    """
+    h_img, w_img = frame_shape[:2]
+    w = max(1, x2 - x1)
+    h = max(1, y2 - y1)
+    pad_x = max(int(round(w * BBOX_PADDING_RATIO_X)), BBOX_PADDING_MIN_PIXELS)
+    pad_y_top = max(int(round(h * BBOX_PADDING_RATIO_Y_TOP)), BBOX_PADDING_MIN_PIXELS)
+    pad_y_bottom = max(int(round(h * BBOX_PADDING_RATIO_Y_BOTTOM)), BBOX_PADDING_MIN_PIXELS)
+
+    ex1 = max(0, x1 - pad_x)
+    ey1 = max(0, y1 - pad_y_top)
+    ex2 = min(w_img, x2 + pad_x)
+    ey2 = min(h_img, y2 + pad_y_bottom)
+    return ex1, ey1, ex2, ey2
+
+
+def save_frame(track_id: int, frame_number: int, crop, bbox, conf, class_name, timestamp, sharpness):
     """Guarda el crop y actualiza metadata.json del vehículo."""
     folder = track_dir(track_id)
     track_key = f"track_{track_id:04d}"
@@ -125,6 +166,7 @@ def save_frame(track_id: int, frame_number: int, crop, bbox, conf, class_name, t
         "frame_number": frame_number,
         "timestamp":    timestamp,
         "confidence":   round(conf, 4),
+        "sharpness":    round(sharpness, 2),
         "bbox":         {"x1": bbox[0], "y1": bbox[1], "x2": bbox[2], "y2": bbox[3]},
     }
 
@@ -194,6 +236,7 @@ total_saves   = 0
 prev_time     = time.time()
 track_mapping = {}
 next_track_id = track_id_offset + 1
+vehicle_states = {}
 
 # ===============================
 # LOOP PRINCIPAL
@@ -226,7 +269,7 @@ while True:
     # --------------------------------------------------
     results = model.track(
         frame,
-        persist=True,           # mantiene IDs entre frames
+        persist=True,
         tracker="bytetrack.yaml",
         verbose=False,
         conf=CONFIDENCE_THRESHOLD,
@@ -234,10 +277,8 @@ while True:
     )
 
     boxes    = results[0].boxes
-    track_ids = boxes.id
-
     # Sin detecciones con ID asignado en este frame
-    if track_ids is None:
+    if boxes.id is None:
         # Mostrar frame sin anotaciones de tracking
         if roi_polygon is not None:
             cv2.polylines(annotated, [roi_polygon], True, (0, 255, 255), 2)
@@ -253,45 +294,84 @@ while True:
             break
         continue
 
-    track_ids_list = track_ids.int().cpu().tolist()
-
-    for box, tid_raw in zip(boxes, track_ids_list):
-        cls_id = int(box.cls[0])
+    for box in boxes:
+        if box.id is None:
+            continue
+            
+        tid_raw = int(box.id[0])
         conf   = float(box.conf[0])
+        cls_id = int(box.cls[0])
 
-        if cls_id not in VEHICLE_CLASSES:
-            continue
+        # Ultralytics entrega floats; redondear reduce sesgo de "achicar" por truncamiento
+        x1, y1, x2, y2 = np.round(box.xyxy[0].cpu().numpy()).astype(int).tolist()
+        w, h = x2 - x1, y2 - y1
 
-        x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
-        class_name = VEHICLE_CLASSES[cls_id]
-
-        # Filtrar por ROI
-        if not center_in_roi(x1, y1, x2, y2):
-            continue
-
-        # Asignar ID secuencial solo a los que entran a la ROI
+        # Mapeamos ID secuencial para todos los detectados (aunque estén fuera del ROI)
         if tid_raw not in track_mapping:
-            track_mapping[tid_raw] = next_track_id
-            next_track_id += 1
-        tid = track_mapping[tid_raw]
+            if cls_id in VEHICLE_CLASSES:
+                track_mapping[tid_raw] = next_track_id
+                next_track_id += 1
+        
+        tid = track_mapping.get(tid_raw, None)
+        
+        # --- DIBUJO EN PANTALLA ---
+        if tid is not None and cls_id in VEHICLE_CLASSES:
+            class_name = VEHICLE_CLASSES[cls_id]
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 220, 0), 2)
+            label = f"ID:{tid} {class_name} {conf:.0%}"
+            cv2.putText(annotated, label, (x1, y1 - 8),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 220, 0), 2)
 
-        # Crop en resolución original
-        crop = frame[y1:y2, x1:x2]
+        # --- FILTROS DE GUARDADO ---
+        if tid is None: continue
+        if not center_in_roi(x1, y1, x2, y2): continue
+        if w < MIN_BBOX_WIDTH or h < MIN_BBOX_HEIGHT: continue
 
-        if crop.size > 0:
-            fname = save_frame(tid, frame_count, crop, (x1, y1, x2, y2), conf, class_name, timestamp)
-            total_saves += 1
-            print(
-                f"[SAVE] track={tid:04d} | frame={frame_count} | "
-                f"{class_name} ({conf:.0%}) | "
-                f"bbox=({x1},{y1})-({x2},{y2}) | {fname}"
+        # Para filtros y movimiento usamos bbox original; para guardar, expandimos bbox
+        crop_x1, crop_y1, crop_x2, crop_y2 = expand_bbox_for_crop(x1, y1, x2, y2, frame.shape)
+
+        # Crop "base" para estimar nitidez (bbox original)
+        crop_for_sharpness = frame[y1:y2, x1:x2]
+        if crop_for_sharpness.size == 0: continue
+
+        # Crop expandido para guardar (mejor chance de incluir patente)
+        crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
+        if crop.size == 0: continue
+
+        # Filtro de Nitidez (Blur)
+        sharpness = calculate_sharpness(crop_for_sharpness)
+        if sharpness < MIN_SHARPNESS: continue
+
+        # Filtro de Movimiento
+        cx, cy = x1 + w // 2, y1 + h // 2
+        
+        if tid not in vehicle_states:
+            vehicle_states[tid] = {"last_center": (cx, cy), "stationary_count": 1}
+            should_save = True
+        else:
+            last_cx, last_cy = vehicle_states[tid]["last_center"]
+            dist = np.sqrt((cx - last_cx)**2 + (cy - last_cy)**2)
+            if dist < MIN_MOVEMENT_PIXELS:
+                vehicle_states[tid]["stationary_count"] += 1
+                should_save = (vehicle_states[tid]["stationary_count"] <= MAX_STATIONARY_FRAMES)
+            else:
+                vehicle_states[tid]["last_center"] = (cx, cy)
+                vehicle_states[tid]["stationary_count"] = 1
+                should_save = True
+
+        if should_save:
+            fname = save_frame(
+                tid,
+                frame_count,
+                crop,
+                (crop_x1, crop_y1, crop_x2, crop_y2),
+                conf,
+                VEHICLE_CLASSES[cls_id],
+                timestamp,
+                sharpness,
             )
-
-        # Dibujar bbox con ID
-        cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 220, 0), 2)
-        label = f"ID:{tid} {class_name} {conf:.0%}"
-        cv2.putText(annotated, label, (x1, y1 - 8),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 220, 0), 2)
+            total_saves += 1
+            print(f"[SAVE] track={tid:04d} | {VEHICLE_CLASSES[cls_id]} | Sharpness: {sharpness:.1f} | {fname}")
 
     # --------------------------------------------------
     # DIBUJAR ROI Y UI

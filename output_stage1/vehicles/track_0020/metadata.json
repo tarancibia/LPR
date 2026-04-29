@@ -1,0 +1,100 @@
+{
+  "track_id": 20,
+  "class_name": "car",
+  "first_seen": "2026-04-29T11:28:19",
+  "last_seen": "2026-04-29T11:28:20",
+  "total_frames": 7,
+  "frames": [
+    {
+      "file": "frame_001938.jpg",
+      "frame_number": 1938,
+      "timestamp": "2026-04-29T11:28:19",
+      "confidence": 0.9281,
+      "sharpness": 226.99,
+      "bbox": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 908,
+        "y2": 627
+      }
+    },
+    {
+      "file": "frame_001941.jpg",
+      "frame_number": 1941,
+      "timestamp": "2026-04-29T11:28:20",
+      "confidence": 0.9146,
+      "sharpness": 223.81,
+      "bbox": {
+        "x1": 205,
+        "y1": 0,
+        "x2": 1002,
+        "y2": 544
+      }
+    },
+    {
+      "file": "frame_001944.jpg",
+      "frame_number": 1944,
+      "timestamp": "2026-04-29T11:28:20",
+      "confidence": 0.9186,
+      "sharpness": 266.27,
+      "bbox": {
+        "x1": 435,
+        "y1": 0,
+        "x2": 1119,
+        "y2": 459
+      }
+    },
+    {
+      "file": "frame_001947.jpg",
+      "frame_number": 1947,
+      "timestamp": "2026-04-29T11:28:20",
+      "confidence": 0.9267,
+      "sharpness": 313.93,
+      "bbox": {
+        "x1": 631,
+        "y1": 0,
+        "x2": 1220,
+        "y2": 387
+      }
+    },
+    {
+      "file": "frame_001950.jpg",
+      "frame_number": 1950,
+      "timestamp": "2026-04-29T11:28:20",
+      "confidence": 0.9037,
+      "sharpness": 350.01,
+      "bbox": {
+        "x1": 797,
+        "y1": 0,
+        "x2": 1307,
+        "y2": 326
+      }
+    },
+    {
+      "file": "frame_001953.jpg",
+      "frame_number": 1953,
+      "timestamp": "2026-04-29T11:28:20",
+      "confidence": 0.8749,
+      "sharpness": 362.01,
+      "bbox": {
+        "x1": 945,
+        "y1": 0,
+        "x2": 1381,
+        "y2": 267
+      }
+    },
+    {
+      "file": "frame_001956.jpg",
+      "frame_number": 1956,
+      "timestamp": "2026-04-29T11:28:20",
+      "confidence": 0.8293,
+      "sharpness": 384.28,
+      "bbox": {
+        "x1": 1072,
+        "y1": 0,
+        "x2": 1452,
+        "y2": 219
+      }
+    }
+  ]
+}

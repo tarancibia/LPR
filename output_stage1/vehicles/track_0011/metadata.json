@@ -1,0 +1,74 @@
+{
+  "track_id": 11,
+  "class_name": "truck",
+  "first_seen": "2026-04-29T11:28:04",
+  "last_seen": "2026-04-29T11:28:04",
+  "total_frames": 5,
+  "frames": [
+    {
+      "file": "frame_001539.jpg",
+      "frame_number": 1539,
+      "timestamp": "2026-04-29T11:28:04",
+      "confidence": 0.8891,
+      "sharpness": 307.82,
+      "bbox": {
+        "x1": 11,
+        "y1": 0,
+        "x2": 642,
+        "y2": 895
+      }
+    },
+    {
+      "file": "frame_001542.jpg",
+      "frame_number": 1542,
+      "timestamp": "2026-04-29T11:28:04",
+      "confidence": 0.9077,
+      "sharpness": 361.95,
+      "bbox": {
+        "x1": 108,
+        "y1": 0,
+        "x2": 681,
+        "y2": 799
+      }
+    },
+    {
+      "file": "frame_001545.jpg",
+      "frame_number": 1545,
+      "timestamp": "2026-04-29T11:28:04",
+      "confidence": 0.9065,
+      "sharpness": 575.15,
+      "bbox": {
+        "x1": 206,
+        "y1": 0,
+        "x2": 726,
+        "y2": 697
+      }
+    },
+    {
+      "file": "frame_001548.jpg",
+      "frame_number": 1548,
+      "timestamp": "2026-04-29T11:28:04",
+      "confidence": 0.8611,
+      "sharpness": 582.77,
+      "bbox": {
+        "x1": 284,
+        "y1": 0,
+        "x2": 776,
+        "y2": 611
+      }
+    },
+    {
+      "file": "frame_001551.jpg",
+      "frame_number": 1551,
+      "timestamp": "2026-04-29T11:28:04",
+      "confidence": 0.8641,
+      "sharpness": 907.39,
+      "bbox": {
+        "x1": 400,
+        "y1": 0,
+        "x2": 870,
+        "y2": 535
+      }
+    }
+  ]
+}

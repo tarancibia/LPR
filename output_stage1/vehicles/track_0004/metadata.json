@@ -1,188 +1,138 @@
 {
   "track_id": 4,
   "class_name": "car",
-  "first_seen": "2026-04-28T13:53:28",
-  "last_seen": "2026-04-28T13:53:30",
-  "total_frames": 15,
+  "first_seen": "2026-04-29T11:27:54",
+  "last_seen": "2026-04-29T11:27:55",
+  "total_frames": 10,
   "frames": [
     {
-      "file": "frame_000357.jpg",
-      "frame_number": 357,
-      "timestamp": "2026-04-28T13:53:28",
-      "confidence": 0.9032,
+      "file": "frame_001302.jpg",
+      "frame_number": 1302,
+      "timestamp": "2026-04-29T11:27:54",
+      "confidence": 0.8869,
+      "sharpness": 257.37,
       "bbox": {
         "x1": 0,
-        "y1": 443,
-        "x2": 716,
-        "y2": 1068
-      }
-    },
-    {
-      "file": "frame_000360.jpg",
-      "frame_number": 360,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.8795,
-      "bbox": {
-        "x1": 11,
-        "y1": 317,
-        "x2": 889,
-        "y2": 1068
-      }
-    },
-    {
-      "file": "frame_000363.jpg",
-      "frame_number": 363,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.6254,
-      "bbox": {
-        "x1": 51,
-        "y1": 196,
-        "x2": 1068,
-        "y2": 1063
-      }
-    },
-    {
-      "file": "frame_000366.jpg",
-      "frame_number": 366,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.7268,
-      "bbox": {
-        "x1": 86,
-        "y1": 90,
-        "x2": 1233,
-        "y2": 1062
-      }
-    },
-    {
-      "file": "frame_000369.jpg",
-      "frame_number": 369,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.8241,
-      "bbox": {
-        "x1": 190,
-        "y1": 29,
-        "x2": 1337,
-        "y2": 987
-      }
-    },
-    {
-      "file": "frame_000372.jpg",
-      "frame_number": 372,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.6274,
-      "bbox": {
-        "x1": 395,
         "y1": 0,
-        "x2": 1467,
-        "y2": 868
+        "x2": 595,
+        "y2": 810
       }
     },
     {
-      "file": "frame_000375.jpg",
-      "frame_number": 375,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.7934,
+      "file": "frame_001305.jpg",
+      "frame_number": 1305,
+      "timestamp": "2026-04-29T11:27:54",
+      "confidence": 0.9238,
+      "sharpness": 279.96,
       "bbox": {
-        "x1": 634,
+        "x1": 79,
         "y1": 0,
-        "x2": 1591,
-        "y2": 747
+        "x2": 644,
+        "y2": 731
       }
     },
     {
-      "file": "frame_000378.jpg",
-      "frame_number": 378,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.7893,
+      "file": "frame_001308.jpg",
+      "frame_number": 1308,
+      "timestamp": "2026-04-29T11:27:54",
+      "confidence": 0.9461,
+      "sharpness": 369.11,
       "bbox": {
-        "x1": 852,
+        "x1": 171,
         "y1": 0,
-        "x2": 1697,
-        "y2": 641
+        "x2": 697,
+        "y2": 638
       }
     },
     {
-      "file": "frame_000381.jpg",
-      "frame_number": 381,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.7991,
+      "file": "frame_001311.jpg",
+      "frame_number": 1311,
+      "timestamp": "2026-04-29T11:27:54",
+      "confidence": 0.9387,
+      "sharpness": 344.56,
       "bbox": {
-        "x1": 1041,
+        "x1": 300,
         "y1": 0,
-        "x2": 1791,
+        "x2": 786,
         "y2": 554
       }
     },
     {
-      "file": "frame_000384.jpg",
-      "frame_number": 384,
-      "timestamp": "2026-04-28T13:53:29",
-      "confidence": 0.7826,
+      "file": "frame_001314.jpg",
+      "frame_number": 1314,
+      "timestamp": "2026-04-29T11:27:55",
+      "confidence": 0.9436,
+      "sharpness": 375.47,
       "bbox": {
-        "x1": 1186,
+        "x1": 447,
         "y1": 0,
-        "x2": 1843,
-        "y2": 478
+        "x2": 906,
+        "y2": 490
       }
     },
     {
-      "file": "frame_000387.jpg",
-      "frame_number": 387,
-      "timestamp": "2026-04-28T13:53:30",
-      "confidence": 0.6219,
+      "file": "frame_001317.jpg",
+      "frame_number": 1317,
+      "timestamp": "2026-04-29T11:27:55",
+      "confidence": 0.9364,
+      "sharpness": 446.45,
       "bbox": {
-        "x1": 1305,
+        "x1": 585,
         "y1": 0,
-        "x2": 1868,
-        "y2": 402
+        "x2": 1018,
+        "y2": 428
       }
     },
     {
-      "file": "frame_000390.jpg",
-      "frame_number": 390,
-      "timestamp": "2026-04-28T13:53:30",
-      "confidence": 0.511,
+      "file": "frame_001320.jpg",
+      "frame_number": 1320,
+      "timestamp": "2026-04-29T11:27:55",
+      "confidence": 0.9189,
+      "sharpness": 529.04,
       "bbox": {
-        "x1": 1404,
+        "x1": 720,
         "y1": 0,
-        "x2": 1884,
-        "y2": 338
+        "x2": 1128,
+        "y2": 372
       }
     },
     {
-      "file": "frame_000393.jpg",
-      "frame_number": 393,
-      "timestamp": "2026-04-28T13:53:30",
-      "confidence": 0.6408,
+      "file": "frame_001323.jpg",
+      "frame_number": 1323,
+      "timestamp": "2026-04-29T11:27:55",
+      "confidence": 0.9314,
+      "sharpness": 603.17,
       "bbox": {
-        "x1": 1488,
+        "x1": 840,
         "y1": 0,
-        "x2": 1900,
-        "y2": 288
+        "x2": 1229,
+        "y2": 324
       }
     },
     {
-      "file": "frame_000396.jpg",
-      "frame_number": 396,
-      "timestamp": "2026-04-28T13:53:30",
-      "confidence": 0.5484,
+      "file": "frame_001326.jpg",
+      "frame_number": 1326,
+      "timestamp": "2026-04-29T11:27:55",
+      "confidence": 0.8692,
+      "sharpness": 551.18,
       "bbox": {
-        "x1": 1563,
-        "y1": 1,
-        "x2": 1912,
-        "y2": 245
+        "x1": 952,
+        "y1": 0,
+        "x2": 1308,
+        "y2": 270
       }
     },
     {
-      "file": "frame_000399.jpg",
-      "frame_number": 399,
-      "timestamp": "2026-04-28T13:53:30",
-      "confidence": 0.5006,
+      "file": "frame_001329.jpg",
+      "frame_number": 1329,
+      "timestamp": "2026-04-29T11:27:55",
+      "confidence": 0.8626,
+      "sharpness": 442.47,
       "bbox": {
-        "x1": 1631,
+        "x1": 1051,
         "y1": 0,
-        "x2": 1920,
-        "y2": 202
+        "x2": 1388,
+        "y2": 229
       }
     }
   ]

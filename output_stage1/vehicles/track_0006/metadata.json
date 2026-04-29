@@ -1,44 +1,151 @@
 {
   "track_id": 6,
-  "class_name": "motorcycle",
-  "first_seen": "2026-04-28T13:54:19",
-  "last_seen": "2026-04-28T13:54:19",
-  "total_frames": 3,
+  "class_name": "car",
+  "first_seen": "2026-04-29T11:27:58",
+  "last_seen": "2026-04-29T11:28:01",
+  "total_frames": 11,
   "frames": [
     {
-      "file": "frame_001611.jpg",
-      "frame_number": 1611,
-      "timestamp": "2026-04-28T13:54:19",
-      "confidence": 0.7455,
+      "file": "frame_001407.jpg",
+      "frame_number": 1407,
+      "timestamp": "2026-04-29T11:27:58",
+      "confidence": 0.8379,
+      "sharpness": 184.56,
       "bbox": {
-        "x1": 1593,
-        "y1": 476,
-        "x2": 1896,
-        "y2": 924
+        "x1": 0,
+        "y1": 0,
+        "x2": 466,
+        "y2": 889
       }
     },
     {
-      "file": "frame_001614.jpg",
-      "frame_number": 1614,
-      "timestamp": "2026-04-28T13:54:19",
-      "confidence": 0.8126,
+      "file": "frame_001434.jpg",
+      "frame_number": 1434,
+      "timestamp": "2026-04-29T11:27:59",
+      "confidence": 0.8785,
+      "sharpness": 123.24,
       "bbox": {
-        "x1": 1651,
-        "y1": 450,
-        "x2": 1920,
-        "y2": 871
+        "x1": 0,
+        "y1": 15,
+        "x2": 372,
+        "y2": 770
       }
     },
     {
-      "file": "frame_001617.jpg",
-      "frame_number": 1617,
-      "timestamp": "2026-04-28T13:54:19",
-      "confidence": 0.7798,
+      "file": "frame_001440.jpg",
+      "frame_number": 1440,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.8114,
+      "sharpness": 165.81,
       "bbox": {
-        "x1": 1711,
-        "y1": 413,
-        "x2": 1920,
-        "y2": 807
+        "x1": 68,
+        "y1": 0,
+        "x2": 554,
+        "y2": 745
+      }
+    },
+    {
+      "file": "frame_001443.jpg",
+      "frame_number": 1443,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.8139,
+      "sharpness": 139.95,
+      "bbox": {
+        "x1": 126,
+        "y1": 0,
+        "x2": 647,
+        "y2": 683
+      }
+    },
+    {
+      "file": "frame_001446.jpg",
+      "frame_number": 1446,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.8905,
+      "sharpness": 175.01,
+      "bbox": {
+        "x1": 217,
+        "y1": 0,
+        "x2": 756,
+        "y2": 601
+      }
+    },
+    {
+      "file": "frame_001449.jpg",
+      "frame_number": 1449,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.889,
+      "sharpness": 209.8,
+      "bbox": {
+        "x1": 361,
+        "y1": 0,
+        "x2": 895,
+        "y2": 522
+      }
+    },
+    {
+      "file": "frame_001452.jpg",
+      "frame_number": 1452,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.9149,
+      "sharpness": 334.46,
+      "bbox": {
+        "x1": 511,
+        "y1": 0,
+        "x2": 1030,
+        "y2": 453
+      }
+    },
+    {
+      "file": "frame_001455.jpg",
+      "frame_number": 1455,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.8851,
+      "sharpness": 313.07,
+      "bbox": {
+        "x1": 658,
+        "y1": 0,
+        "x2": 1152,
+        "y2": 390
+      }
+    },
+    {
+      "file": "frame_001458.jpg",
+      "frame_number": 1458,
+      "timestamp": "2026-04-29T11:28:00",
+      "confidence": 0.8581,
+      "sharpness": 317.12,
+      "bbox": {
+        "x1": 791,
+        "y1": 0,
+        "x2": 1258,
+        "y2": 335
+      }
+    },
+    {
+      "file": "frame_001464.jpg",
+      "frame_number": 1464,
+      "timestamp": "2026-04-29T11:28:01",
+      "confidence": 0.851,
+      "sharpness": 281.99,
+      "bbox": {
+        "x1": 1034,
+        "y1": 0,
+        "x2": 1412,
+        "y2": 236
+      }
+    },
+    {
+      "file": "frame_001467.jpg",
+      "frame_number": 1467,
+      "timestamp": "2026-04-29T11:28:01",
+      "confidence": 0.8337,
+      "sharpness": 250.53,
+      "bbox": {
+        "x1": 1129,
+        "y1": 0,
+        "x2": 1487,
+        "y2": 197
       }
     }
   ]

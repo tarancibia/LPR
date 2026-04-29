@@ -1,0 +1,113 @@
+{
+  "track_id": 15,
+  "class_name": "truck",
+  "first_seen": "2026-04-29T11:28:07",
+  "last_seen": "2026-04-29T11:28:12",
+  "total_frames": 8,
+  "frames": [
+    {
+      "file": "frame_001632.jpg",
+      "frame_number": 1632,
+      "timestamp": "2026-04-29T11:28:07",
+      "confidence": 0.8116,
+      "sharpness": 269.27,
+      "bbox": {
+        "x1": 410,
+        "y1": 0,
+        "x2": 1343,
+        "y2": 437
+      }
+    },
+    {
+      "file": "frame_001722.jpg",
+      "frame_number": 1722,
+      "timestamp": "2026-04-29T11:28:11",
+      "confidence": 0.9194,
+      "sharpness": 181.17,
+      "bbox": {
+        "x1": 620,
+        "y1": 0,
+        "x2": 1739,
+        "y2": 539
+      }
+    },
+    {
+      "file": "frame_001725.jpg",
+      "frame_number": 1725,
+      "timestamp": "2026-04-29T11:28:11",
+      "confidence": 0.9099,
+      "sharpness": 195.52,
+      "bbox": {
+        "x1": 759,
+        "y1": 0,
+        "x2": 1781,
+        "y2": 492
+      }
+    },
+    {
+      "file": "frame_001728.jpg",
+      "frame_number": 1728,
+      "timestamp": "2026-04-29T11:28:11",
+      "confidence": 0.916,
+      "sharpness": 238.09,
+      "bbox": {
+        "x1": 942,
+        "y1": 0,
+        "x2": 1832,
+        "y2": 422
+      }
+    },
+    {
+      "file": "frame_001731.jpg",
+      "frame_number": 1731,
+      "timestamp": "2026-04-29T11:28:11",
+      "confidence": 0.8633,
+      "sharpness": 253.09,
+      "bbox": {
+        "x1": 1120,
+        "y1": 0,
+        "x2": 1889,
+        "y2": 355
+      }
+    },
+    {
+      "file": "frame_001734.jpg",
+      "frame_number": 1734,
+      "timestamp": "2026-04-29T11:28:11",
+      "confidence": 0.8768,
+      "sharpness": 250.53,
+      "bbox": {
+        "x1": 1274,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 294
+      }
+    },
+    {
+      "file": "frame_001737.jpg",
+      "frame_number": 1737,
+      "timestamp": "2026-04-29T11:28:11",
+      "confidence": 0.8904,
+      "sharpness": 239.01,
+      "bbox": {
+        "x1": 1402,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 235
+      }
+    },
+    {
+      "file": "frame_001740.jpg",
+      "frame_number": 1740,
+      "timestamp": "2026-04-29T11:28:12",
+      "confidence": 0.8775,
+      "sharpness": 293.87,
+      "bbox": {
+        "x1": 1509,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 181
+      }
+    }
+  ]
+}

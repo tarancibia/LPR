@@ -1,92 +1,138 @@
 {
   "track_id": 5,
-  "class_name": "car",
-  "first_seen": "2026-04-28T13:53:32",
-  "last_seen": "2026-04-28T13:53:32",
-  "total_frames": 7,
+  "class_name": "truck",
+  "first_seen": "2026-04-29T11:27:57",
+  "last_seen": "2026-04-29T11:27:58",
+  "total_frames": 10,
   "frames": [
     {
-      "file": "frame_000441.jpg",
-      "frame_number": 441,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.8095,
+      "file": "frame_001368.jpg",
+      "frame_number": 1368,
+      "timestamp": "2026-04-29T11:27:57",
+      "confidence": 0.8006,
+      "sharpness": 143.7,
       "bbox": {
-        "x1": 123,
-        "y1": 63,
-        "x2": 620,
-        "y2": 773
-      }
-    },
-    {
-      "file": "frame_000444.jpg",
-      "frame_number": 444,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.8151,
-      "bbox": {
-        "x1": 261,
-        "y1": 15,
-        "x2": 708,
-        "y2": 638
-      }
-    },
-    {
-      "file": "frame_000447.jpg",
-      "frame_number": 447,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.8192,
-      "bbox": {
-        "x1": 524,
-        "y1": 1,
-        "x2": 902,
-        "y2": 506
-      }
-    },
-    {
-      "file": "frame_000450.jpg",
-      "frame_number": 450,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.8967,
-      "bbox": {
-        "x1": 765,
+        "x1": 0,
         "y1": 0,
-        "x2": 1091,
-        "y2": 411
+        "x2": 1394,
+        "y2": 1080
       }
     },
     {
-      "file": "frame_000453.jpg",
-      "frame_number": 453,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.9127,
+      "file": "frame_001371.jpg",
+      "frame_number": 1371,
+      "timestamp": "2026-04-29T11:27:57",
+      "confidence": 0.8124,
+      "sharpness": 209.84,
       "bbox": {
-        "x1": 963,
-        "y1": 1,
-        "x2": 1244,
-        "y2": 330
+        "x1": 0,
+        "y1": 0,
+        "x2": 1453,
+        "y2": 1080
       }
     },
     {
-      "file": "frame_000456.jpg",
-      "frame_number": 456,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.8829,
+      "file": "frame_001377.jpg",
+      "frame_number": 1377,
+      "timestamp": "2026-04-29T11:27:57",
+      "confidence": 0.8588,
+      "sharpness": 370.81,
       "bbox": {
-        "x1": 1130,
-        "y1": 2,
-        "x2": 1375,
-        "y2": 263
+        "x1": 273,
+        "y1": 0,
+        "x2": 1610,
+        "y2": 1037
       }
     },
     {
-      "file": "frame_000459.jpg",
-      "frame_number": 459,
-      "timestamp": "2026-04-28T13:53:32",
-      "confidence": 0.8619,
+      "file": "frame_001380.jpg",
+      "frame_number": 1380,
+      "timestamp": "2026-04-29T11:27:57",
+      "confidence": 0.8638,
+      "sharpness": 215.65,
       "bbox": {
-        "x1": 1276,
-        "y1": 1,
-        "x2": 1485,
-        "y2": 200
+        "x1": 473,
+        "y1": 0,
+        "x2": 1689,
+        "y2": 932
+      }
+    },
+    {
+      "file": "frame_001383.jpg",
+      "frame_number": 1383,
+      "timestamp": "2026-04-29T11:27:57",
+      "confidence": 0.8609,
+      "sharpness": 239.65,
+      "bbox": {
+        "x1": 652,
+        "y1": 0,
+        "x2": 1754,
+        "y2": 833
+      }
+    },
+    {
+      "file": "frame_001386.jpg",
+      "frame_number": 1386,
+      "timestamp": "2026-04-29T11:27:57",
+      "confidence": 0.8681,
+      "sharpness": 262.65,
+      "bbox": {
+        "x1": 813,
+        "y1": 0,
+        "x2": 1828,
+        "y2": 752
+      }
+    },
+    {
+      "file": "frame_001389.jpg",
+      "frame_number": 1389,
+      "timestamp": "2026-04-29T11:27:58",
+      "confidence": 0.864,
+      "sharpness": 271.61,
+      "bbox": {
+        "x1": 950,
+        "y1": 0,
+        "x2": 1868,
+        "y2": 669
+      }
+    },
+    {
+      "file": "frame_001392.jpg",
+      "frame_number": 1392,
+      "timestamp": "2026-04-29T11:27:58",
+      "confidence": 0.8514,
+      "sharpness": 302.49,
+      "bbox": {
+        "x1": 1069,
+        "y1": 0,
+        "x2": 1918,
+        "y2": 605
+      }
+    },
+    {
+      "file": "frame_001395.jpg",
+      "frame_number": 1395,
+      "timestamp": "2026-04-29T11:27:58",
+      "confidence": 0.8792,
+      "sharpness": 343.54,
+      "bbox": {
+        "x1": 1166,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 539
+      }
+    },
+    {
+      "file": "frame_001398.jpg",
+      "frame_number": 1398,
+      "timestamp": "2026-04-29T11:27:58",
+      "confidence": 0.8473,
+      "sharpness": 372.31,
+      "bbox": {
+        "x1": 1248,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 482
       }
     }
   ]

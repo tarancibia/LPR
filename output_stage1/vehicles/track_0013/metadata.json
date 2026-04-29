@@ -1,0 +1,48 @@
+{
+  "track_id": 13,
+  "class_name": "truck",
+  "first_seen": "2026-04-29T11:28:05",
+  "last_seen": "2026-04-29T11:28:06",
+  "total_frames": 3,
+  "frames": [
+    {
+      "file": "frame_001578.jpg",
+      "frame_number": 1578,
+      "timestamp": "2026-04-29T11:28:05",
+      "confidence": 0.8773,
+      "sharpness": 127.79,
+      "bbox": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 791,
+        "y2": 836
+      }
+    },
+    {
+      "file": "frame_001581.jpg",
+      "frame_number": 1581,
+      "timestamp": "2026-04-29T11:28:05",
+      "confidence": 0.8794,
+      "sharpness": 170.82,
+      "bbox": {
+        "x1": 83,
+        "y1": 0,
+        "x2": 817,
+        "y2": 753
+      }
+    },
+    {
+      "file": "frame_001587.jpg",
+      "frame_number": 1587,
+      "timestamp": "2026-04-29T11:28:06",
+      "confidence": 0.859,
+      "sharpness": 286.72,
+      "bbox": {
+        "x1": 289,
+        "y1": 0,
+        "x2": 895,
+        "y2": 588
+      }
+    }
+  ]
+}
