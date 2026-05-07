@@ -1,0 +1,49 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ===========================
+# Entorno virtual
+# ===========================
+venv/
+.venv/
+env/
+
+# ===========================
+# Modelos exportados a otros formatos (opcionales, muy pesados)
+# Los archivos .pt SI se guardan en el repo
+# ===========================
+*.onnx
+*.engine
+
+# ===========================
+# Datasets (se descargan desde Roboflow)
+# ===========================
+datasets/
+dataset.zip
+
+# ===========================
+# Resultados de entrenamiento
+# ===========================
+runs/
+
+# ===========================
+# Outputs del sistema LPR (datos operacionales)
+# ===========================
+output_stage1/
+output_stage2/
+
+# ===========================
+# Archivos de configuración sensibles
+# (contienen IPs, contraseñas, etc.)
+# ===========================
+config/roi.json
+
+# ===========================
+# Misc
+# .gemini/ -> carpeta interna del asistente de IA (historial de conversaciones)
+# ===========================
+.gemini/
