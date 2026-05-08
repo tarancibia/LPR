@@ -43,8 +43,7 @@ Los motores de OCR necesitan imágenes claras y con buen contraste. A los recort
 Para comenzar con la implementación, necesitamos definir:
 
 1. **Modelo Detector de Patentes (Paso 2):**
-   * ¿Tenemos un modelo `yolo_plates.pt` entrenado, o buscamos uno pre-entrenado estándar para comenzar?
+   * **Seleccionado:** `license_plate_detector.pt` (Entrenado a partir de YOLOv8n).
 2. **Motor OCR (Paso 4):**
-   * **PaddleOCR:** Muy preciso, entiende contexto, algo más pesado de instalar. (Recomendado).
-   * **EasyOCR:** Buena precisión, usa PyTorch, fácil integración.
-   * **Tesseract:** Rápido y ligero, pero suele fallar más con fuentes raras o imágenes ruidosas.
+   * **Seleccionado:** **EasyOCR** (Restaurado por compatibilidad con Python 3.14).
+   * PaddleOCR: Descartado temporalmente por falta de compatibilidad con Python 3.14.

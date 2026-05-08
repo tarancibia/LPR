@@ -28,28 +28,28 @@ from pathlib import Path
 from ultralytics import YOLO
 
 # ===============================
-# CONFIGURACION
+# CONFIGURACION Y AJUSTES
 # ===============================
 
-RTSP_URL   = "rtsp://admin:Muni2026@192.168.107.121:554/cam/realmonitor?channel=1&subtype=0"
-#RTSP_URL   = "rtsp://admin:hw7J4wrc*SN6@192.168.105.174:554/cam/realmonitor?channel=1&subtype=0"
+# --- HISTORIAL DE CAMBIOS (Para referencia y reversión) ---
+# 1. ORIG: Tracker=ByteTrack, Process=2, ConfTracker=0.25, ConfSave=0.80, Sharp=100
+# 2. TEST: Tracker=ByteTrack, Process=1, ConfTracker=0.20, ConfSave=0.35, Sharp=40 (Duplicaba IDs)
+# 3. NOW : Tracker=BoTSORT,   Process=1, ConfTracker=0.45, ConfSave=0.40, Sharp=40
+# ----------------------------------------------------------
+
+RTSP_URL   = "rtsp://admin:Muni2026@192.168.115.221:554/cam/realmonitor?channel=1&subtype=0"
 MODEL_PATH = "yolov8n.pt"
 
-# Procesar cada frame para un tracking fluido
-PROCESS_EVERY = 2
+PROCESS_EVERY = 1              # Salto de frames (1=todos, 2=uno por medio)
+TRACKER_CONFIDENCE_THRESHOLD = 0.45  # Confianza para que el Tracker asigne ID
+SAVE_CONFIDENCE_THRESHOLD    = 0.40  # Confianza para guardar el recorte
 
-# Umbral para el TRACKER (permisivo para no perder el hilo)
-TRACKER_CONFIDENCE_THRESHOLD = 0.25
-
-# Umbral para GUARDAR (estricto para asegurar calidad)
-SAVE_CONFIDENCE_THRESHOLD = 0.8
-
-# Filtros de Calidad y Movimiento (Pipeline Etapa 1)
-MIN_BBOX_WIDTH = 60
-MIN_BBOX_HEIGHT = 60
-MIN_SHARPNESS = 100.0
-MIN_MOVEMENT_PIXELS = 10
-MAX_STATIONARY_FRAMES = 3
+# Filtros de Calidad
+MIN_BBOX_WIDTH = 50      
+MIN_BBOX_HEIGHT = 50     
+MIN_SHARPNESS = 40.0           # Nitidez (Laplaciano). Bajar si no guarda nada.
+MIN_MOVEMENT_PIXELS = 5  
+MAX_STATIONARY_FRAMES = 10 
 
 # Expandir bbox SOLO para el recorte guardado (para incluir mejor el vehículo/patente)
 # Recomendación: más padding hacia abajo (donde suele estar la patente).
@@ -119,13 +119,21 @@ def calculate_sharpness(image):
     return cv2.Laplacian(gray, cv2.CV_64F).var()
 
 
-def center_in_roi(x1, y1, x2, y2):
-    """Retorna True si el centro del bbox está dentro del polígono ROI."""
+def is_partially_in_roi(x1, y1, x2, y2):
+    """Retorna True si cualquier esquina o el centro del bbox está dentro del ROI."""
     if roi_polygon is None:
         return True
-    cx = int((x1 + x2) / 2)
-    cy = int((y1 + y2) / 2)
-    return cv2.pointPolygonTest(roi_polygon, (cx, cy), False) >= 0
+    
+    # Puntos a probar: 4 esquinas + centro
+    points = [
+        (x1, y1), (x2, y1), (x1, y2), (x2, y2),
+        (int((x1+x2)/2), int((y1+y2)/2))
+    ]
+    
+    for pt in points:
+        if cv2.pointPolygonTest(roi_polygon, (float(pt[0]), float(pt[1])), False) >= 0:
+            return True
+    return False
 
 
 def track_dir(track_id: int) -> Path:
@@ -268,12 +276,12 @@ while True:
     annotated = frame.copy()
 
     # --------------------------------------------------
-    # INFERENCIA CON TRACKING (ByteTrack)
+    # INFERENCIA CON TRACKING (BoTSORT es más robusto contra duplicados)
     # --------------------------------------------------
     results = model.track(
         frame,
         persist=True,
-        tracker="bytetrack.yaml",
+        tracker="botsort.yaml", # PREV: bytetrack.yaml
         verbose=False,
         conf=TRACKER_CONFIDENCE_THRESHOLD,
         classes=list(VEHICLE_CLASSES.keys()),
@@ -316,68 +324,76 @@ while True:
         tid = track_mapping.get(tid_raw, None)
         
         # --- VALIDACIÓN DE ROI ---
-        is_inside_roi = center_in_roi(x1, y1, x2, y2)
-
-        # --- DIBUJO EN PANTALLA ---
-        # Solo dibujamos si está dentro del ROI
-        if tid is not None and cls_id in VEHICLE_CLASSES and is_inside_roi:
-            class_name = VEHICLE_CLASSES[cls_id]
-            cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 220, 0), 2)
-            label = f"ID:{tid} {class_name} {conf:.0%}"
-            cv2.putText(annotated, label, (x1, y1 - 8),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 220, 0), 2)
+        is_inside_roi = is_partially_in_roi(x1, y1, x2, y2)
+        
+        status_msg = ""
+        status_color = (0, 0, 255) # Rojo por defecto (ignorado)
 
         # --- FILTROS DE GUARDADO ---
-        if tid is None: continue
-        if not is_inside_roi: continue
-        if conf < SAVE_CONFIDENCE_THRESHOLD: continue
-        if w < MIN_BBOX_WIDTH or h < MIN_BBOX_HEIGHT: continue
-
-        # Para filtros y movimiento usamos bbox original; para guardar, expandimos bbox
-        crop_x1, crop_y1, crop_x2, crop_y2 = expand_bbox_for_crop(x1, y1, x2, y2, frame.shape)
-
-        # Crop "base" para estimar nitidez (bbox original)
-        crop_for_sharpness = frame[y1:y2, x1:x2]
-        if crop_for_sharpness.size == 0: continue
-
-        # Crop expandido para guardar
-        crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
-        if crop.size == 0: continue
-
-        # Filtro de Nitidez
-        sharpness = calculate_sharpness(crop_for_sharpness)
-        if sharpness < MIN_SHARPNESS: continue
-
-        # Filtro de Movimiento
-        cx, cy = x1 + w // 2, y1 + h // 2
-        
-        if tid not in vehicle_states:
-            vehicle_states[tid] = {"last_center": (cx, cy), "stationary_count": 1}
-            should_save = True
+        if tid is None: 
+            status_msg = "BUSCANDO ID"
+        elif not is_inside_roi: 
+            status_msg = "FUERA ROI"
+        elif conf < SAVE_CONFIDENCE_THRESHOLD: 
+            status_msg = f"CONF BAJA ({conf:.2f})"
+        elif w < MIN_BBOX_WIDTH or h < MIN_BBOX_HEIGHT: 
+            status_msg = "MUY PEQUENO"
         else:
-            last_cx, last_cy = vehicle_states[tid]["last_center"]
-            dist = np.sqrt((cx - last_cx)**2 + (cy - last_cy)**2)
-            if dist < MIN_MOVEMENT_PIXELS:
-                vehicle_states[tid]["stationary_count"] += 1
-                should_save = (vehicle_states[tid]["stationary_count"] <= MAX_STATIONARY_FRAMES)
+            # Crop "base" para estimar nitidez (bbox original)
+            crop_for_sharpness = frame[y1:y2, x1:x2]
+            if crop_for_sharpness.size == 0: 
+                status_msg = "ERROR CROP"
             else:
-                vehicle_states[tid]["last_center"] = (cx, cy)
-                vehicle_states[tid]["stationary_count"] = 1
-                should_save = True
+                sharpness = calculate_sharpness(crop_for_sharpness)
+                if sharpness < MIN_SHARPNESS:
+                    status_msg = f"BORROSO ({sharpness:.0f})"
+                else:
+                    # Filtro de Movimiento
+                    cx, cy = x1 + w // 2, y1 + h // 2
+                    should_save = False
+                    
+                    if tid not in vehicle_states:
+                        vehicle_states[tid] = {"last_center": (cx, cy), "stationary_count": 1}
+                        should_save = True
+                    else:
+                        last_cx, last_cy = vehicle_states[tid]["last_center"]
+                        dist = np.sqrt((cx - last_cx)**2 + (cy - last_cy)**2)
+                        if dist < MIN_MOVEMENT_PIXELS:
+                            vehicle_states[tid]["stationary_count"] += 1
+                            if vehicle_states[tid]["stationary_count"] <= MAX_STATIONARY_FRAMES:
+                                should_save = True
+                            else:
+                                status_msg = "ESTACIONARIO"
+                        else:
+                            vehicle_states[tid]["last_center"] = (cx, cy)
+                            vehicle_states[tid]["stationary_count"] = 1
+                            should_save = True
 
-        if should_save:
-            fname = save_frame(
-                tid,
-                frame_count,
-                crop,
-                (crop_x1, crop_y1, crop_x2, crop_y2),
-                conf,
-                VEHICLE_CLASSES[cls_id],
-                timestamp,
-                sharpness,
-            )
-            total_saves += 1
-            print(f"[SAVE] track={tid:04d} | {VEHICLE_CLASSES[cls_id]} | Sharpness: {sharpness:.1f} | {fname}")
+                    if should_save:
+                        status_msg = "GUARDANDO..."
+                        status_color = (0, 255, 0) # Verde
+                        
+                        crop_x1, crop_y1, crop_x2, crop_y2 = expand_bbox_for_crop(x1, y1, x2, y2, frame.shape)
+                        crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
+                        
+                        if crop.size > 0:
+                            fname = save_frame(
+                                tid, frame_count, crop,
+                                (crop_x1, crop_y1, crop_x2, crop_y2),
+                                conf, VEHICLE_CLASSES[cls_id], timestamp, sharpness
+                            )
+                            total_saves += 1
+                            # Log opcional en consola
+                            # print(f"[SAVE] track={tid:04d} | {fname}")
+
+        # --- DIBUJO EN PANTALLA ---
+        if tid is not None and cls_id in VEHICLE_CLASSES:
+            class_name = VEHICLE_CLASSES[cls_id]
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), status_color, 2)
+            label = f"ID:{tid} {class_name} {conf:.0%}"
+            cv2.putText(annotated, label, (x1, y1 - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, status_color, 2)
+            if status_msg:
+                cv2.putText(annotated, status_msg, (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.4, status_color, 1)
 
     # --------------------------------------------------
     # DIBUJAR ROI Y UI

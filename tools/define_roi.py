@@ -22,7 +22,7 @@ from pathlib import Path
 # CONFIGURACION
 # ===============================
 
-RTSP_URL = "rtsp://admin:Muni2026@192.168.107.121:554/cam/realmonitor?channel=1&subtype=0"
+RTSP_URL = "rtsp://admin:Muni2026@192.168.115.221:554/cam/realmonitor?channel=1&subtype=0"
 CONFIG_PATH = Path("config/roi.json")
 
 # Colores (BGR)
